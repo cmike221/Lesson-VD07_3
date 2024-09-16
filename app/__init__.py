@@ -16,6 +16,12 @@ def create_app():
     login_manager.login_view = 'login'
     login_manager.login_message_category = 'info'
 
+    from .models import User  # Импортируйте модель User
+    with app.app_context():
+        # Удаление всех записей в таблице пользователей
+        db.session.query(User).delete()
+        db.session.commit()
+
     from .routes import main
     app.register_blueprint(main)
 
