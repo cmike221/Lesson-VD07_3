@@ -4,6 +4,7 @@ from .models import User
 from flask_login import login_user, login_required, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from sqlalchemy.exc import IntegrityError
+from .forms import RegistrationForm  # Предполагается, что форма находится в файле forms.py
 
 main = Blueprint('main', __name__)
 
@@ -29,10 +30,11 @@ def login():
 
 @main.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        username = form.username.data
+        email = form.email.data
+        password = form.password.data
         hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         new_user = User(username=username, email=email, password=hashed_password)
 
@@ -45,7 +47,7 @@ def register():
             db.session.rollback()  # Откат изменений в случае ошибки
             flash('An account with this email already exists.', 'danger')
 
-    return render_template('register.html')
+    return render_template('register.html', form=form)
 
 
 @main.route('/profile')
